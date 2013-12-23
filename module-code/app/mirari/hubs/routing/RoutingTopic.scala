@@ -6,12 +6,14 @@ import akka.actor.Actor
  * Common routing behaviour for topic
  */
 trait RoutingTopic[T] {
-  self: Actor =>
+  actor: Actor =>
+
+  val resourceUrl: String = "/" + self.path.parent.name + "/" + self.path.name
 
   type State = T
 
   val routingBehaviour: Actor.Receive = {
-    case RoutingMessage(_, action, state, data) =>
+    case RoutingMessage(`resourceUrl`, action, state, data) =>
       handleAction(action, state.asInstanceOf[State], data)
   }
 
