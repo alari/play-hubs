@@ -1,16 +1,13 @@
 package mirari.hubs.routing
 
 import akka.actor.Actor
+import mirari.hubs.HubTopic
 
 /**
  * Common routing behaviour for topic
  */
-trait RoutingTopic[T] {
+trait RoutingTopic[T] extends HubTopic[T]{
   actor: Actor =>
-
-  val resourceUrl: String = "/" + self.path.parent.name + "/" + self.path.name
-
-  type State = T
 
   val routingBehaviour: Actor.Receive = {
     case RoutingMessage(`resourceUrl`, action, state, data) =>
@@ -18,5 +15,4 @@ trait RoutingTopic[T] {
   }
 
   def handleAction(action: String, state: State, data: Option[Any]): Unit
-
 }

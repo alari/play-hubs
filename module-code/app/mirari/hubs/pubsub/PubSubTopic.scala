@@ -3,16 +3,14 @@ package mirari.hubs.pubsub
 import akka.actor._
 import scala.concurrent.duration.FiniteDuration
 import scala.Some
+import mirari.hubs.HubTopic
 
 /**
   * @author alari
   * @since 12/19/13
   */
-trait PubSubTopic[T] {
+trait PubSubTopic[T] extends HubTopic[T]{
    topic: Actor =>
-
-
-   type State = T
 
    private var listeners = Set[ActorRef]()
    private var timeout: Option[Cancellable] = None
