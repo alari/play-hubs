@@ -6,6 +6,7 @@ import scala.runtime.AbstractPartialFunction
 import mirari.hubs.Hubs
 import scala.concurrent.{Future, ExecutionContext}
 import mirari.wished.{Unwished, WishedAction}
+import play.api.libs.json.JsValue
 
 /**
  * @author alari
@@ -102,6 +103,9 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
       } yield resp match {
         case res: SimpleResult => res
         case u: Unwished[_] => u.response
+        case j: JsValue => Ok(j)
+        case Some(j: JsValue) => Ok(j)
+        case None => NotFound
         case z =>
           play.api.Logger.error(s"hub = $hub; topic = $topic; action = $action; returned not a simple result but this: $z")
           InternalServerError
