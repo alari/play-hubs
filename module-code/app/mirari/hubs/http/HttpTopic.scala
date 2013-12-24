@@ -11,7 +11,7 @@ import mirari.wished.Unwished
 trait HttpTopic[T] extends HubTopic[T]{
   topic: Actor =>
 
-  val handleHttpAction: PartialFunction[HttpAction[State],Unit] = {case _ if false => }
+  val handleHttpAction: PartialFunction[HttpAction[State],Unit]
 
   val httpBehaviour: Receive = {
     case ha@HttpAction(_, s: State, _) =>
