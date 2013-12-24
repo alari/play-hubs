@@ -14,6 +14,8 @@ import mirari.wished.{Unwished, WishedAction}
 abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends Router.Routes with BodyParsers with Results {
   private var path: String = ""
 
+  private implicit val ctx = ec
+
   type State = T
 
   /**
