@@ -12,19 +12,69 @@ import play.api.libs.json.JsValue
  * @author alari
  * @since 12/24/13
  */
-abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends Router.Routes with BodyParsers with Results {
-  private var path: String = ""
 
-  private implicit val ctx = ec
+/**
+ * Router for all hubs system
+ *
+ * Usage:
+ *
+ * ->        /api        your.package.SubClassRouterObject
+ *
+ * @param hubs your hubs system
+ * @param ec execution context to handle io in
+ * @tparam T user state
+ */
+abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
 
-  type State = T
+  implicit val ctx = ec
 
   /**
-   * Builds user state by a header -- e.g. authenticates the user
-   * @param rh request header
-   * @return
+   * Url regexp to handle with router: /:hub/:topic/?action?
    */
-  def state(rh: RequestHeader): Future[State]
+  private val urlParse = "/([^/]+)/([^/]+)(/(.*))?".r
+
+  val resourceHandler = {
+    case urlParse(hub, topic, _, action) =>
+      handler(hubs(hub), topic, action)
+  }
+}
+
+/**
+ * Router for a single hub
+ *
+ * usage:
+ * ->    /api/hubName     your.package.SubClassRouterObject
+ *
+ * @param hubs your hubs system
+ * @param hub hub name to handle with this router
+ * @param ec execution context for io
+ * @tparam T user state class
+ */
+abstract class HubHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
+
+  implicit val ctx = ec
+
+  private val hubInst = hubs(hub)
+
+  /**
+   * Url regexp to handle with router: /:topic/?action?
+   */
+  private val urlParse = "/([^/]+)(/(.*))?".r
+
+  val resourceHandler = {
+    case urlParse(topic, _, action) =>
+      handler(hubInst, topic, action)
+  }
+}
+
+/**
+ * Router template
+ * @tparam T user state type
+ */
+private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Results {
+  type State = T
+
+  private[http] var path: String = ""
 
   /**
    * Used by play
@@ -58,27 +108,22 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
    * @param r
    * @return
    */
-  private def bodyParser(r: RequestHeader) = {
+  private[http] def bodyParser(r: RequestHeader) = {
     def defaultBodyParser(rr: RequestHeader) =
-      if(rr.method == "GET" || rr.method == "OPTIONS") parse.empty
+      if (rr.method == "GET" || rr.method == "OPTIONS") parse.empty
       else parse.anyContent
     parsers.applyOrElse(r, defaultBodyParser)
   }
 
-  /**
-   * Url regexp to handle with router: /:hub/:topic/?action?
-   */
-  private val urlParse = "/([^/]+)/([^/]+)(/(.*))?".r
+  implicit val ctx: ExecutionContext
+
+  val resourceHandler: PartialFunction[String,BodyParser[_] => Handler]
 
   def routes = new AbstractPartialFunction[RequestHeader, Handler] {
 
     override def applyOrElse[A <: RequestHeader, B >: Handler](rh: A, default: A => B) = {
       if (rh.path.startsWith(path)) {
-        rh.path.drop(path.length) match {
-          case urlParse(hub, topic, _, action) =>
-            handler(bodyParser(rh), hub, topic, action)
-          case _ => default(rh)
-        }
+        resourceHandler.applyOrElse(rh.path.drop(path.length), {_ => _: BodyParser[_] => default(rh)})(bodyParser(rh))
       } else {
         default(rh)
       }
@@ -88,6 +133,13 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
   }
 
   /**
+   * Builds user state by a header -- e.g. authenticates the user
+   * @param rh request header
+   * @return
+   */
+  def state(rh: RequestHeader): Future[State]
+
+  /**
    * Produces a handler for the given properties
    * @param parser body parser to use
    * @param hub hub id
@@ -95,11 +147,11 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
    * @param action action subline
    * @return handler
    */
-  private def handler(parser: BodyParser[_], hub: String, topic: String, action: String): Handler = WishedAction.async(parser) {
+  private[http] def handler(hub: Hubs#Hub, topic: String, action: String)(parser: BodyParser[_]): Handler = WishedAction.async(parser) {
     request =>
       for {
         s <- state(request)
-        resp <- hubs(hub)(topic) ? HttpAction(action, s, request)
+        resp <- hub(topic) ? HttpAction(action, s, request)
       } yield resp match {
         case res: SimpleResult => res
         case u: Unwished[_] => u.response
