@@ -16,6 +16,7 @@ trait HttpTopic[T] extends HubTopic[T] with Results{
 
   val httpBehaviour: Receive = {
     case ha@HttpAction(_, s, _) => s match {
+        // TODO: this check is type-erased; how to match it?
       case _: State =>
         handleHttpAction.applyOrElse(ha.asInstanceOf[HttpAction[State]], {_: HttpAction[_] => sender ! Unwished.NotFound})
       case _ =>

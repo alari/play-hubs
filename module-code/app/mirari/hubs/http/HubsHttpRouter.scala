@@ -7,6 +7,7 @@ import mirari.hubs.Hubs
 import scala.concurrent.{Future, ExecutionContext}
 import mirari.wished.{Unwished, WishedAction}
 import play.api.libs.json.JsValue
+import scala.reflect.ClassTag
 
 /**
  * @author alari
@@ -33,7 +34,7 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
    */
   private val urlParse = "/([^/]+)/([^/]+)(/(.*))?".r
 
-  val resourceHandler = {
+  override val resourceHandler: RHandler = {
     case urlParse(hub, topic, _, action) =>
       handler(hubs(hub), topic, action)
   }
@@ -61,7 +62,7 @@ abstract class HubHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = 
    */
   private val urlParse = "/([^/]+)(/(.*))?".r
 
-  val resourceHandler = {
+  override val resourceHandler: RHandler = {
     case urlParse(topic, _, action) =>
       handler(hubInst, topic, action)
   }
@@ -117,13 +118,15 @@ private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Re
 
   implicit val ctx: ExecutionContext
 
-  val resourceHandler: PartialFunction[String,BodyParser[_] => Handler]
+  type RHandler = PartialFunction[String,BodyParser[_] => Handler]
+
+  val resourceHandler: RHandler
 
   def routes = new AbstractPartialFunction[RequestHeader, Handler] {
 
     override def applyOrElse[A <: RequestHeader, B >: Handler](rh: A, default: A => B) = {
       if (rh.path.startsWith(path)) {
-        resourceHandler.applyOrElse(rh.path.drop(path.length), {_ => _: BodyParser[_] => default(rh)})(bodyParser(rh))
+        resourceHandler.applyOrElse(rh.path.drop(path.length), {_: String => _: BodyParser[_] => default(rh)})(bodyParser(rh))
       } else {
         default(rh)
       }
