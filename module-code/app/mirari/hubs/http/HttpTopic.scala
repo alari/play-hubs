@@ -12,7 +12,9 @@ import play.api.mvc.Results
 trait HttpTopic[T] extends HubTopic[T] with Results{
   topic: Actor =>
 
-  val handleHttpAction: PartialFunction[HttpAction[State],Unit]
+  type HttpHandler = PartialFunction[HttpAction[State],Unit]
+
+  val handleHttpAction: HttpHandler
 
   val httpBehaviour: Receive = {
     case ha@HttpAction(_, s, _) => s match {
