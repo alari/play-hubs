@@ -7,7 +7,6 @@ import mirari.hubs.Hubs
 import scala.concurrent.{Future, ExecutionContext}
 import mirari.wished.{Unwished, WishedAction}
 import play.api.libs.json.JsValue
-import scala.reflect.ClassTag
 
 /**
  * @author alari
@@ -69,6 +68,47 @@ abstract class HubHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = 
 }
 
 /**
+ * Gets topic value from request header
+ * @param hubs your hubs system
+ * @param hub hub name
+ * @param ec execution context for io
+ * @tparam T user state type
+ */
+abstract class RequestHeaderTopicHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
+
+  implicit val ctx = ec
+
+  private val hubInst = hubs(hub)
+
+  def topic(rh: RequestHeader): String
+
+  /**
+   * Url regexp to handle with router: /:topic/?action?
+   */
+  private val urlParse = "(/([^/]+))?".r
+
+  override val resourceHandler: RHandler = ???
+
+  override def routes = new AbstractPartialFunction[RequestHeader, Handler] {
+
+    override def applyOrElse[A <: RequestHeader, B >: Handler](rh: A, default: A => B) = {
+      if (rh.path.startsWith(path)) {
+        rh.path.drop(path.length) match {
+          case urlParse(_, action) =>
+            handler(hubInst, topic(rh), action)(bodyParser(rh))
+          case _ =>
+            default(rh)
+        }
+      } else {
+        default(rh)
+      }
+    }
+
+    def isDefinedAt(rh: RequestHeader) = rh.path.startsWith(path)
+  }
+}
+
+/**
  * Router template
  * @tparam T user state type
  */
@@ -118,7 +158,7 @@ private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Re
 
   implicit val ctx: ExecutionContext
 
-  type RHandler = PartialFunction[String,BodyParser[_] => Handler]
+  type RHandler = PartialFunction[String, BodyParser[_] => Handler]
 
   val resourceHandler: RHandler
 
@@ -126,7 +166,9 @@ private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Re
 
     override def applyOrElse[A <: RequestHeader, B >: Handler](rh: A, default: A => B) = {
       if (rh.path.startsWith(path)) {
-        resourceHandler.applyOrElse(rh.path.drop(path.length), {_: String => _: BodyParser[_] => default(rh)})(bodyParser(rh))
+        resourceHandler.applyOrElse(rh.path.drop(path.length), {
+          _: String => _: BodyParser[_] => default(rh)
+        })(bodyParser(rh))
       } else {
         default(rh)
       }
