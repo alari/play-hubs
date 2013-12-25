@@ -11,11 +11,6 @@ import scala.concurrent.duration.Duration
  * @since 12/19/13
  */
 abstract class Hubs(system: ActorSystem) {
-  type State
-
-  def state(implicit rh: RequestHeader): Future[State]
-  def stateSync(implicit rh: RequestHeader): State = Await.result(state, Duration(1, "second"))
-
   val guardianName = "hubs"
 
   val hubs = system.actorOf(Props[HubsActor], guardianName)

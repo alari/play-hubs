@@ -3,7 +3,7 @@ package mirari.hubs.http
 import play.api.mvc._
 import play.core.Router
 import scala.runtime.AbstractPartialFunction
-import mirari.hubs.Hubs
+import mirari.hubs.{StateHubs, Hubs}
 import scala.concurrent.{Future, ExecutionContext}
 import mirari.wished.{Unwished, WishedAction}
 import play.api.libs.json.JsValue
@@ -23,7 +23,7 @@ import play.api.libs.json.JsValue
  * @param hubs your hubs system
  * @param ec execution context to handle io in
  */
-abstract class HubsHttpRouter(hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
+abstract class HubsHttpRouter[T](hubs: Hubs with StateHubs[T], ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
 
   implicit val ctx = ec
 
@@ -48,7 +48,7 @@ abstract class HubsHttpRouter(hubs: Hubs, ec: ExecutionContext = play.api.libs.c
  * @param hub hub name to handle with this router
  * @param ec execution context for io
  */
-abstract class HubHttpRouter(val hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
+abstract class HubHttpRouter[T](val hubs: Hubs with StateHubs[T], hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
 
   implicit val ctx = ec
 
@@ -71,7 +71,7 @@ abstract class HubHttpRouter(val hubs: Hubs, hub: String, ec: ExecutionContext =
  * @param hub hub name
  * @param ec execution context for io
  */
-abstract class RequestHeaderTopicHttpRouter(val hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
+abstract class RequestHeaderTopicHttpRouter[T](val hubs: Hubs with StateHubs[T], hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
 
   implicit val ctx = ec
 
@@ -108,10 +108,10 @@ abstract class RequestHeaderTopicHttpRouter(val hubs: Hubs, hub: String, ec: Exe
 /**
  * Router template
  */
-private[http] trait HttpRouter extends Router.Routes with BodyParsers with Results {
+private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Results {
   private[http] var path: String = ""
 
-  def hubs: Hubs
+  def hubs: Hubs with StateHubs[T]
 
   /**
    * Used by play

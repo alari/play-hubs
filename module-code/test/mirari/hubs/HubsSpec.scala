@@ -14,12 +14,11 @@ import scala.concurrent.Future
 class HubsSpec extends PlaySpecification{
   implicit val system = ActorSystem("hubs-spec")
 
-  val hub = new Hubs(system) {
-    type State = RequestHeader
+  val hub = new Hubs(system) with StateHubs[RequestHeader] {
     def state(implicit rh: RequestHeader) = Future successful rh
   }
 
-  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic {
+  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic[RequestHeader] {
     val hubs = hub
     probe.tell(id, self)
     def receive = {

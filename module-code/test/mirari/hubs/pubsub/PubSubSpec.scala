@@ -3,7 +3,7 @@ package mirari.hubs.pubsub
 import play.api.test.{FakeRequest, PlaySpecification}
 import akka.actor.{Props, Actor, ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import mirari.hubs.{HubTopic, Hubs}
+import mirari.hubs.{StateHubs, HubTopic, Hubs}
 import scala.concurrent.duration.FiniteDuration
 import play.api.mvc.RequestHeader
 import scala.concurrent.Future
@@ -15,12 +15,11 @@ import scala.concurrent.Future
 class PubSubSpec extends PlaySpecification {
   implicit val system = ActorSystem("pubsub-spec")
 
-  val hub = new Hubs(system) with PubSubHubs {
-    type State = RequestHeader
+  val hub = new Hubs(system) with PubSubHubs with StateHubs[RequestHeader] {
     def state(implicit rh: RequestHeader) = Future successful rh
   }
 
-  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic with PubSubTopic {
+  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic[RequestHeader] with PubSubTopic[RequestHeader] {
     val hubs = hub
     probe.tell(id, self)
 

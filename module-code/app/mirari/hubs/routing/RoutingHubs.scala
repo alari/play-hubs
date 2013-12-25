@@ -1,14 +1,14 @@
 package mirari.hubs.routing
 
-import mirari.hubs.Hubs
+import mirari.hubs.{StateHubs, Hubs}
 import akka.actor.ActorRef
 import scala.concurrent.Future
 
 /**
   * PibSubHubs mixin for user messages handling
   */
-trait RoutingHubs {
-   self: Hubs =>
+trait RoutingHubs[T] {
+   self: Hubs with StateHubs[T] =>
 
    val routeR = "/?([^/]+)/([^/]+)".r
 
@@ -17,7 +17,7 @@ trait RoutingHubs {
     * @param msg message to handle
     * @param sender sender
     */
-   def reach(msg: RoutingMessage, sender: ActorRef = hubs) = msg.resource match {
+   def reach(msg: RoutingMessage[T], sender: ActorRef = hubs) = msg.resource match {
      case routeR(hub, topic) =>
        apply(hub)(topic).reach(msg, sender)
    }
@@ -27,14 +27,14 @@ trait RoutingHubs {
     * @param msg message to handle
     * @param sender sender
     */
-   def !!(msg: RoutingMessage)(implicit sender: ActorRef = hubs): Unit = reach(msg, sender)
+   def !!(msg: RoutingMessage[T])(implicit sender: ActorRef = hubs): Unit = reach(msg, sender)
 
    /**
     * Send-and-forget a message to a topic. Message is lost when the topic doesn't exist
     * @param msg message to send
     * @param sender sender
     */
-   def send(msg: RoutingMessage, sender: ActorRef = hubs) = msg.resource match {
+   def send(msg: RoutingMessage[T], sender: ActorRef = hubs) = msg.resource match {
      case routeR(hub, topic) =>
        apply(hub)(topic).send(msg, sender)
    }
@@ -44,7 +44,7 @@ trait RoutingHubs {
     * @param msg message to send
     * @param sender sender
     */
-   def !(msg: RoutingMessage)(implicit sender: ActorRef = hubs) = send(msg, sender)
+   def !(msg: RoutingMessage[T])(implicit sender: ActorRef = hubs) = send(msg, sender)
 
    /**
     * Ask and return a future. Topic will be created if it doesn't exist
@@ -52,7 +52,7 @@ trait RoutingHubs {
     * @param timeout timeout
     * @return
     */
-   def retrieve(msg: RoutingMessage, timeout: akka.util.Timeout = DefaultTimeout): Future[Any] = msg.resource match {
+   def retrieve(msg: RoutingMessage[T], timeout: akka.util.Timeout = DefaultTimeout): Future[Any] = msg.resource match {
      case routeR(hub, topic, _, act) =>
        apply(hub)(topic).retrieve(msg)
    }
@@ -63,5 +63,5 @@ trait RoutingHubs {
     * @param timeout timeout
     * @return
     */
-   def ?(msg: RoutingMessage)(implicit timeout: akka.util.Timeout = DefaultTimeout) = retrieve(msg, timeout)
+   def ?(msg: RoutingMessage[T])(implicit timeout: akka.util.Timeout = DefaultTimeout) = retrieve(msg, timeout)
  }

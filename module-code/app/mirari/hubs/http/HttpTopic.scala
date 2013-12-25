@@ -9,17 +9,17 @@ import play.api.mvc.Results
  * @author alari
  * @since 12/24/13
  */
-trait HttpTopic extends HubTopic with Results {
+trait HttpTopic[T] extends HubTopic[T] with Results {
   topic: Actor =>
 
-  type HttpHandler = PartialFunction[HttpAction, Unit]
+  type HttpHandler = PartialFunction[HttpAction[T], Unit]
 
   val handleHttpAction: HttpHandler
 
   val httpBehaviour: Receive = {
-    case ha: HttpAction =>
+    case ha: HttpAction[T] =>
       handleHttpAction.applyOrElse(ha, {
-        _: HttpAction => sender ! Unwished.NotFound
+        _: HttpAction[T] => sender ! Unwished.NotFound
       })
 
   }

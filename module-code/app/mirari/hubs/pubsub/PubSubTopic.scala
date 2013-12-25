@@ -9,7 +9,7 @@ import mirari.hubs.{Hubs, HubTopic}
   * @author alari
   * @since 12/19/13
   */
-trait PubSubTopic extends HubTopic{
+trait PubSubTopic[T] extends HubTopic[T]{
    topic: Actor =>
 
    private var listeners = Set[ActorRef]()
@@ -59,7 +59,7 @@ trait PubSubTopic extends HubTopic{
      listeners.foreach(_ ! message)
    }
 
-  type CanSubscribe = PartialFunction[Hubs#State,Boolean]
+  type CanSubscribe = PartialFunction[T,Boolean]
 
    val canSubscribe: CanSubscribe
 
@@ -70,7 +70,7 @@ trait PubSubTopic extends HubTopic{
      case PubSubTopic.Broadcast(m) =>
        broadcast(m)
 
-     case PubSubTopic.Join(state) if canSubscribe.applyOrElse(state.asInstanceOf[Hubs#State], {_: Hubs#State => false: Boolean}) =>
+     case PubSubTopic.Join(state: T) if canSubscribe.applyOrElse(state, {_: T => false: Boolean}) =>
        join(sender)
 
      case PubSubTopic.Leave if listeners.contains(sender) =>
