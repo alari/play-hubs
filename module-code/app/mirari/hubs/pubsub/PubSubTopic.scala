@@ -15,7 +15,7 @@ trait PubSubTopic extends HubTopic{
    private var listeners = Set[ActorRef]()
    private var timeout: Option[Cancellable] = None
 
-   val timeoutDelay = FiniteDuration(10, "seconds")
+   def timeoutDelay = FiniteDuration(10, "seconds")
   /**
    * Should actor die when there's no listeners connected or not
    */
@@ -59,7 +59,9 @@ trait PubSubTopic extends HubTopic{
      listeners.foreach(_ ! message)
    }
 
-   val canSubscribe: PartialFunction[Hubs#State,Boolean]
+  type CanSubscribe = PartialFunction[Hubs#State,Boolean]
+
+   val canSubscribe: CanSubscribe
 
    val pubSubBehaviour: Receive = {
      case Terminated(a) if listeners.contains(a) =>

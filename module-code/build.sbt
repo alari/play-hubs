@@ -5,7 +5,8 @@ organization := "ru.mirari"
 version := "1.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "ru.mirari" %% "play-wished" % "1.0-SNAPSHOT"
+  "ru.mirari" %% "play-wished" % "1.0-SNAPSHOT",
+  "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
 )
 
 publishTo := {
