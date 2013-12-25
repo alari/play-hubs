@@ -5,6 +5,7 @@ import akka.actor._
 import play.api.mvc.RequestHeader
 import akka.testkit.TestProbe
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.Future
 
 /**
  * @author alari (name.alari@gmail.com)
@@ -13,7 +14,10 @@ import scala.concurrent.duration.FiniteDuration
 class HubsSpec extends PlaySpecification{
   implicit val system = ActorSystem("hubs-spec")
 
-  val hub = new Hubs(system)
+  val hub = new Hubs(system) {
+    type State = RequestHeader
+    def state(implicit rh: RequestHeader) = Future successful rh
+  }
 
   class Topic(id: String, probe: ActorRef) extends Actor with HubTopic {
     val hubs = hub
