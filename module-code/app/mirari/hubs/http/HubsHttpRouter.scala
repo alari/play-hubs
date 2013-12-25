@@ -22,9 +22,8 @@ import play.api.libs.json.JsValue
  *
  * @param hubs your hubs system
  * @param ec execution context to handle io in
- * @tparam T user state
  */
-abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
+abstract class HubsHttpRouter(hubs: Hubs, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
 
   implicit val ctx = ec
 
@@ -48,13 +47,12 @@ abstract class HubsHttpRouter[T](hubs: Hubs, ec: ExecutionContext = play.api.lib
  * @param hubs your hubs system
  * @param hub hub name to handle with this router
  * @param ec execution context for io
- * @tparam T user state class
  */
-abstract class HubHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
+abstract class HubHttpRouter(val hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
 
   implicit val ctx = ec
 
-  private val hubInst = hubs(hub)
+  private val hubInst: Hubs#Hub = hubs(hub)
 
   /**
    * Url regexp to handle with router: /:topic/?action?
@@ -72,9 +70,8 @@ abstract class HubHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = 
  * @param hubs your hubs system
  * @param hub hub name
  * @param ec execution context for io
- * @tparam T user state type
  */
-abstract class RequestHeaderTopicHttpRouter[T](hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter[T] {
+abstract class RequestHeaderTopicHttpRouter(val hubs: Hubs, hub: String, ec: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext) extends HttpRouter {
 
   implicit val ctx = ec
 
@@ -110,12 +107,11 @@ abstract class RequestHeaderTopicHttpRouter[T](hubs: Hubs, hub: String, ec: Exec
 
 /**
  * Router template
- * @tparam T user state type
  */
-private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Results {
-  type State = T
-
+private[http] trait HttpRouter extends Router.Routes with BodyParsers with Results {
   private[http] var path: String = ""
+
+  def hubs: Hubs
 
   /**
    * Used by play
@@ -178,13 +174,6 @@ private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Re
   }
 
   /**
-   * Builds user state by a header -- e.g. authenticates the user
-   * @param rh request header
-   * @return
-   */
-  def state(rh: RequestHeader): Future[State]
-
-  /**
    * Produces a handler for the given properties
    * @param parser body parser to use
    * @param hub hub id
@@ -195,7 +184,7 @@ private[http] trait HttpRouter[T] extends Router.Routes with BodyParsers with Re
   private[http] def handler(hub: Hubs#Hub, topic: String, action: String)(parser: BodyParser[_]): Handler = WishedAction.async(parser) {
     request =>
       for {
-        s <- state(request)
+        s <- hubs.state(request)
         resp <- hub(topic) ? HttpAction(action, s, request)
       } yield resp match {
         case res: SimpleResult => res

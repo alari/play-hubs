@@ -2,12 +2,20 @@ package mirari.hubs
 
 import akka.actor._
 import akka.pattern.ask
+import scala.concurrent.{Await, Future}
+import play.api.mvc.RequestHeader
+import scala.concurrent.duration.Duration
 
 /**
  * @author alari
  * @since 12/19/13
  */
-class Hubs(system: ActorSystem) {
+abstract class Hubs(system: ActorSystem) {
+  type State
+
+  def state(implicit rh: RequestHeader): Future[State]
+  def stateSync(implicit rh: RequestHeader): State = Await.result(state, Duration(1, "second"))
+
   val guardianName = "hubs"
 
   val hubs = system.actorOf(Props[HubsActor], guardianName)
@@ -48,5 +56,5 @@ class Hubs(system: ActorSystem) {
    * @param name name
    * @return
    */
-  def apply(name: String) = Hub(name)
+  def apply(name: String): Hubs#Hub = Hub(name).asInstanceOf[Hubs#Hub]
 }

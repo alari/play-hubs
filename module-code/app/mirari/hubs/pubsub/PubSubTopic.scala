@@ -3,13 +3,13 @@ package mirari.hubs.pubsub
 import akka.actor._
 import scala.concurrent.duration.FiniteDuration
 import scala.Some
-import mirari.hubs.HubTopic
+import mirari.hubs.{Hubs, HubTopic}
 
 /**
   * @author alari
   * @since 12/19/13
   */
-trait PubSubTopic[T] extends HubTopic[T]{
+trait PubSubTopic extends HubTopic{
    topic: Actor =>
 
    private var listeners = Set[ActorRef]()
@@ -59,7 +59,7 @@ trait PubSubTopic[T] extends HubTopic[T]{
      listeners.foreach(_ ! message)
    }
 
-   val canSubscribe: PartialFunction[State,Boolean]
+   val canSubscribe: PartialFunction[Hubs#State,Boolean]
 
    val pubSubBehaviour: Receive = {
      case Terminated(a) if listeners.contains(a) =>
@@ -68,7 +68,7 @@ trait PubSubTopic[T] extends HubTopic[T]{
      case PubSubTopic.Broadcast(m) =>
        broadcast(m)
 
-     case PubSubTopic.Join(state) if canSubscribe.applyOrElse(state.asInstanceOf[State], {_: State => false: Boolean}) =>
+     case PubSubTopic.Join(state) if canSubscribe.applyOrElse(state.asInstanceOf[Hubs#State], {_: Hubs#State => false: Boolean}) =>
        join(sender)
 
      case PubSubTopic.Leave if listeners.contains(sender) =>

@@ -9,7 +9,7 @@ import mirari.hubs.Hubs
   */
 trait PubSubClient {
    current: Actor =>
-     def state: Any
+     def state: Hubs#State
      def hubs: Hubs
 
      def join(hub: String, topic: String) = hubs(hub)(topic) !! PubSubTopic.Join(state)
