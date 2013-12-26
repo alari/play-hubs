@@ -19,6 +19,11 @@ abstract class Hubs(system: ActorSystem) {
     hubs ! HubsActor.CreateHub(name, topicProps)
   }
 
+  def hubFor(name: String, topicProps: String => Props) {
+    this(name) = topicProps
+    this(name)
+  }
+
   val DefaultTimeout = akka.util.Timeout(100)
 
   /**
