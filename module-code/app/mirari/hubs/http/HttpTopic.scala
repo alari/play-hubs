@@ -12,6 +12,8 @@ import play.api.mvc.Results
 trait HttpTopic[T] extends HubTopic[T] with Results {
   topic: Actor =>
 
+  abstract override def topicBehaviour: Receive = super.topicBehaviour orElse httpBehaviour
+
   type HttpHandler = PartialFunction[HttpAction[T], Unit]
 
   val handleHttpAction: HttpHandler

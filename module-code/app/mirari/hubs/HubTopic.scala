@@ -11,5 +11,9 @@ trait HubTopic[T] {
 
   def hubs: Hubs with StateHubs[T]
 
+  def topicBehaviour: Receive = {
+    case _ if false =>
+  }
+
   val resourceUrl: String = "/" + self.path.parent.name + "/" + self.path.name
 }

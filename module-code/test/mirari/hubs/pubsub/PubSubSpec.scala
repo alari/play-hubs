@@ -25,7 +25,7 @@ class PubSubSpec extends PlaySpecification {
 
     override def timeoutDelay = FiniteDuration(222, "milliseconds")
 
-    def receive = pubSubBehaviour orElse ({
+    def receive = topicBehaviour orElse ({
       case m =>
         play.api.Logger.error(m.toString)
         probe.tell((id, m), sender)

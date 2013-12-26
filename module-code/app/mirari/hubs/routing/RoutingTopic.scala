@@ -9,6 +9,8 @@ import mirari.hubs.{Hubs, HubTopic}
 trait RoutingTopic[T] extends HubTopic[T]{
   actor: Actor =>
 
+  abstract override def topicBehaviour: Receive = super.topicBehaviour orElse routingBehaviour
+
   val routingBehaviour: Actor.Receive = {
     case RoutingMessage(`resourceUrl`, action, state: T, data) =>
       handleAction(action, state, data)

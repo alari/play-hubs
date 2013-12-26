@@ -63,7 +63,9 @@ trait PubSubTopic[T] extends HubTopic[T]{
 
    val canSubscribe: CanSubscribe
 
-   val pubSubBehaviour: Receive = {
+  abstract override def topicBehaviour: Receive = super.topicBehaviour orElse pubSubBehaviour
+
+  val pubSubBehaviour: Receive = {
      case Terminated(a) if listeners.contains(a) =>
        leave(a)
 
