@@ -18,7 +18,7 @@ trait HttpTopic[T] extends HubTopic[T] with Results {
 
   val handleHttpAction: HttpHandler
 
-  private val childrenActionR = "/([^/]+)(/(.+))?".r
+  private val childrenActionR = "([^/]+)(/(.+))?".r
 
   val httpBehaviour: Receive = {
     case ha: HttpAction[T] =>
