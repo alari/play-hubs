@@ -18,10 +18,18 @@ trait HttpTopic[T] extends HubTopic[T] with Results {
 
   val handleHttpAction: HttpHandler
 
+  private val childrenActionR = "/([^/]+)(/(.+))?".r
+
   val httpBehaviour: Receive = {
     case ha: HttpAction[T] =>
       handleHttpAction.applyOrElse(ha, {
-        _: HttpAction[T] => sender ! Unwished.NotFound
+        h: HttpAction[T] =>
+          h.action match {
+            case childrenActionR(c, _, a) if childrenProps.contains(c) =>
+              child(c).tell(h.copy(action = a), sender)
+            case _ =>
+              sender ! Unwished.NotFound
+          }
       })
 
   }
