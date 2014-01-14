@@ -25,7 +25,7 @@ class PubSubSpec extends PlaySpecification {
 
     override def timeoutDelay = FiniteDuration(222, "milliseconds")
 
-    def customBehaviour = {
+    override def customBehaviour = {
       case m =>
         play.api.Logger.error(m.toString)
         probe.tell((topicId, m), sender)
@@ -34,8 +34,6 @@ class PubSubSpec extends PlaySpecification {
     val canSubscribe: CanSubscribe = {
       case _ => true
     }
-
-    def handleAction(a: String, s: RequestHeader, data: Option[Any]) = ???
   }
 
   val probe = TestProbe()

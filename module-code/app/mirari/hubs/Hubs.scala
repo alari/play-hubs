@@ -82,7 +82,11 @@ abstract class FullHubs[T](system: ActorSystem) extends Hubs(system) with StateH
 trait FullTopic[T] extends Actor with PubSubTopic[T] with RoutingTopic[T] with UpdateStash {
   def topicId = self.path.name
 
-  def customBehaviour: Receive
+  def customBehaviour: Receive = {case a => play.api.Logger.debug(s"Unhandled message for ${self.path}: $a")}
+
+  def handleAction(action: String, state: T, data: Option[Any]) {
+    play.api.Logger.debug(s"You should implement handleAction(action: String, state: T, data: Option[Any]) for ${getClass.getCanonicalName}")
+  }
 
   def receive = topicBehaviour orElse customBehaviour
 }
