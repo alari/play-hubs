@@ -5,7 +5,6 @@ organization := "ru.mirari"
 version := "1.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "ru.mirari" %% "play-wished" % "1.0-SNAPSHOT",
   "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
 )
 
@@ -24,8 +23,6 @@ play.Project.playScalaSettings
 resolvers ++= Seq(
   "quonb" at "http://mvn.quonb.org/artifactory/repo/"
 )
-
-
 
 testOptions in Test += Tests.Argument("junitxml")
 

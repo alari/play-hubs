@@ -29,7 +29,7 @@ private[hubs] class HubsActor extends Actor {
 
 private[hubs] object HubsActor {
 
-  case class CreateHub(name: String, topicProps: String => Props)
+  case class CreateHub(name: String, topicProps: Props)
 
   case class HubMessage(hub: String, message: Any)
 

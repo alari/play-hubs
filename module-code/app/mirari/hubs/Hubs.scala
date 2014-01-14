@@ -5,6 +5,8 @@ import akka.pattern.ask
 import scala.concurrent.{Await, Future}
 import play.api.mvc.RequestHeader
 import scala.concurrent.duration.Duration
+import mirari.hubs.routing.{RoutingTopic, RoutingHubs}
+import mirari.hubs.pubsub.{PubSubClient, PubSubTopic, PubSubHubs}
 
 /**
  * @author alari
@@ -15,11 +17,11 @@ abstract class Hubs(system: ActorSystem) {
 
   val hubs = system.actorOf(Props[HubsActor], guardianName)
 
-  def update(name: String, topicProps: String => Props) {
+  def update(name: String, topicProps: Props) {
     hubs ! HubsActor.CreateHub(name, topicProps)
   }
 
-  def hubFor(name: String, topicProps: String => Props) {
+  def hubFor(name: String, topicProps: Props) {
     this(name) = topicProps
     this(name)
   }
@@ -57,4 +59,36 @@ abstract class Hubs(system: ActorSystem) {
    * @return
    */
   def apply(name: String): Hubs#Hub = Hub(name).asInstanceOf[Hubs#Hub]
+
+  /**
+   * Shortcut: create and access a new hub
+   * @param name name
+   * @param topicProps hub topic props
+   */
+  def apply(name: String, topicProps: Props) = hubFor(name, topicProps)
 }
+
+/**
+ * Helper: hubs builder with full functionality
+ * @param system actor system to place actors in
+ * @tparam T state type
+ */
+abstract class FullHubs[T](system: ActorSystem) extends Hubs(system) with StateHubs[T] with RoutingHubs[T] with PubSubHubs
+
+/**
+ * Helper: full hubs topic to implement
+ * @tparam T state
+ */
+trait FullTopic[T] extends Actor with PubSubTopic[T] with RoutingTopic[T] with UpdateStash {
+  def topicId = self.path.name
+
+  def customBehaviour: Receive
+
+  def receive = topicBehaviour orElse customBehaviour
+}
+
+/**
+ * Helper: full hubs client
+ * @tparam T state
+ */
+trait FullClient[T] extends Actor with PubSubClient[T] with UpdateStash

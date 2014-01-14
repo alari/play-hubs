@@ -7,7 +7,7 @@ import akka.actor.SupervisorStrategy.Stop
  * @author alari
  * @since 12/19/13
  */
-private[hubs] class HubActor(topicProps: String => Props) extends Actor {
+private[hubs] class HubActor(topicProps: Props) extends Actor {
 
   import HubActor._
 
@@ -22,7 +22,7 @@ private[hubs] class HubActor(topicProps: String => Props) extends Actor {
     case ReachTopic(name, message) =>
       (context.child(name) match {
         case Some(a) => a
-        case None => context.actorOf(topicProps(name), name)
+        case None => context.actorOf(topicProps, name)
       }).tell(message, sender)
 
     case TryTopic(name, message) =>
