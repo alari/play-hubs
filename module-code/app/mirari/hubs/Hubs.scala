@@ -21,7 +21,7 @@ abstract class Hubs(system: ActorSystem) {
     hubs ! HubsActor.CreateHub(name, topicProps)
   }
 
-  def hubFor(name: String, topicProps: Props) {
+  def hubFor(name: String, topicProps: Props) = {
     this(name) = topicProps
     this(name)
   }
@@ -65,7 +65,7 @@ abstract class Hubs(system: ActorSystem) {
    * @param name name
    * @param topicProps hub topic props
    */
-  def apply(name: String, topicProps: Props) = hubFor(name, topicProps)
+  def apply(name: String, topicProps: Props): Hubs#Hub = hubFor(name, topicProps)
 }
 
 /**
