@@ -18,7 +18,9 @@ class HubsSpec extends PlaySpecification{
     def state(implicit rh: RequestHeader) = Future successful rh
   }
 
-  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic[RequestHeader] {
+  class Topic(probe: ActorRef) extends Actor with HubTopic[RequestHeader] {
+    val id = self.path.name
+
     val hubs = hub
     probe.tell(id, self)
     def receive = {
@@ -31,7 +33,7 @@ class HubsSpec extends PlaySpecification{
   val sender = TestProbe()
   implicit val s = sender.ref
 
-  hub("a") = (s:String) => Props(new Topic(s, probe.ref))
+  hub("a") = Props({new Topic(probe.ref)})
   val aHub = hub("a")
 
   "hubs system" should {

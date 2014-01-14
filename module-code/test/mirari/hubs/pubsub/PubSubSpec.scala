@@ -3,7 +3,7 @@ package mirari.hubs.pubsub
 import play.api.test.{FakeRequest, PlaySpecification}
 import akka.actor.{Props, Actor, ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import mirari.hubs.{StateHubs, HubTopic, Hubs}
+import mirari.hubs.{FullTopic, StateHubs, HubTopic, Hubs}
 import scala.concurrent.duration.FiniteDuration
 import play.api.mvc.RequestHeader
 import scala.concurrent.Future
@@ -19,28 +19,30 @@ class PubSubSpec extends PlaySpecification {
     def state(implicit rh: RequestHeader) = Future successful rh
   }
 
-  class Topic(id: String, probe: ActorRef) extends Actor with HubTopic[RequestHeader] with PubSubTopic[RequestHeader] {
+  class Topic(probe: ActorRef) extends FullTopic[RequestHeader] {
     val hubs = hub
-    probe.tell(id, self)
+    probe.tell(topicId, self)
 
     override def timeoutDelay = FiniteDuration(222, "milliseconds")
 
-    def receive = topicBehaviour orElse ({
+    def customBehaviour = {
       case m =>
         play.api.Logger.error(m.toString)
-        probe.tell((id, m), sender)
-    }: Receive)
+        probe.tell((topicId, m), sender)
+    }
 
     val canSubscribe: CanSubscribe = {
       case _ => true
     }
+
+    def handleAction(a: String, s: RequestHeader, data: Option[Any]) = ???
   }
 
   val probe = TestProbe()
   val sender = TestProbe()
   implicit val s = sender.ref
 
-  hub("a") = (s: String) => Props(new Topic(s, probe.ref))
+  hub("a") = Props[Topic]({new Topic(probe.ref)})
   val aHub = hub("a")
 
   "pubsub hubs system" should {
