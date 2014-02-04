@@ -38,7 +38,7 @@ abstract class Hubs(system: ActorSystem) {
     case class Topic(topic: String) {
       def reach(message: Any, sender: ActorRef = hubs) = hubs.tell(HubsActor.HubMessage(name, HubActor.ReachTopic(topic, message)), sender)
 
-      def !!(message: Any)(implicit sender: ActorRef) = reach(message, sender)
+      def !!(message: Any)(implicit sender: ActorRef = hubs) = reach(message, sender)
 
       def send(message: Any, sender: ActorRef = hubs) = hubs.tell(HubsActor.HubMessage(name, HubActor.TryTopic(topic, message)), sender)
 
