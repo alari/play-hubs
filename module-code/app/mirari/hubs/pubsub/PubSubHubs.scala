@@ -16,4 +16,12 @@ trait PubSubHubs {
    * @param message message
    */
   def broadcast(hub: String, topic: String, message: Any) = this(hub)(topic) ! PubSubTopic.Broadcast(message)
+
+  /**
+   * Helper -- forces target hub creation
+   * @param hub hub name
+   * @param topic topic id
+   * @param message message
+   */
+  def forceBroadcast(hub: String, topic: String, message: Any) = this(hub)(topic) !! PubSubTopic.Broadcast(message)
 }
