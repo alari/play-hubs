@@ -48,7 +48,7 @@ abstract class Hubs(system: ActorSystem) {
 
       def ?(message: Any)(implicit timeout: akka.util.Timeout = DefaultTimeout) = retrieve(message)
 
-      def check(implicit timeout: akka.util.Timeout = DefaultTimeout) = hubs ? HubsActor.HubMessage(name, HubActor.CheckTopic(topic))
+      def check(implicit timeout: akka.util.Timeout = DefaultTimeout) = (hubs ? HubsActor.HubMessage(name, HubActor.CheckTopic(topic))).mapTo[Boolean]
     }
 
   }
