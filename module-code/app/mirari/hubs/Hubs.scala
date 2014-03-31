@@ -12,7 +12,7 @@ import mirari.hubs.pubsub.{PubSubClient, PubSubTopic, PubSubHubs}
  * @author alari
  * @since 12/19/13
  */
-abstract class Hubs(system: ActorSystem) {
+abstract class Hubs(system: => ActorSystem) {
   val guardianName = "hubs"
 
   val hubs = system.actorOf(Props[HubsActor], guardianName)
@@ -73,7 +73,7 @@ abstract class Hubs(system: ActorSystem) {
  * @param system actor system to place actors in
  * @tparam T state type
  */
-abstract class FullHubs[T](system: ActorSystem) extends Hubs(system) with StateHubs[T] with RoutingHubs[T] with PubSubHubs
+abstract class FullHubs[T](system: => ActorSystem) extends Hubs(system) with StateHubs[T] with RoutingHubs[T] with PubSubHubs
 
 /**
  * Helper: full hubs topic to implement
