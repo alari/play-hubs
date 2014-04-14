@@ -1,4 +1,4 @@
-package mirari.hubs
+package infra.hubs
 
 import play.api.test.PlaySpecification
 import akka.actor._

@@ -1,4 +1,4 @@
-package mirari.hubs
+package infra.hubs
 
 import akka.actor.{Status, OneForOneStrategy, Props, Actor}
 import akka.actor.SupervisorStrategy.Restart

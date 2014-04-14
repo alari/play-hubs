@@ -1,7 +1,7 @@
-package mirari.hubs.routing
+package infra.hubs.routing
 
 import akka.actor.Actor
-import mirari.hubs.HubTopic
+import infra.hubs.HubTopic
 
 /**
  * Common routing behaviour for topic

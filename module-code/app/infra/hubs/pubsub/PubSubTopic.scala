@@ -1,9 +1,9 @@
-package mirari.hubs.pubsub
+package infra.hubs.pubsub
 
 import akka.actor._
 import scala.concurrent.duration.FiniteDuration
 import scala.Some
-import mirari.hubs.HubTopic
+import infra.hubs.HubTopic
 
 /**
  * @author alari

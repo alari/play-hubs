@@ -1,4 +1,4 @@
-package mirari.hubs
+package infra.hubs
 
 import akka.actor.{OneForOneStrategy, Actor, Props}
 import akka.actor.SupervisorStrategy.Stop
@@ -11,7 +11,7 @@ private[hubs] class HubActor(topicProps: Props) extends Actor {
 
   import HubActor._
 
-  override val supervisorStrategy = OneForOneStrategy(){
+  override val supervisorStrategy = OneForOneStrategy() {
     case _ => Stop
   }
 

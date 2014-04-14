@@ -1,12 +1,12 @@
-package mirari.hubs.pubsub
+package infra.hubs
 
 import play.api.test.{FakeRequest, PlaySpecification}
-import akka.actor.{Props, Actor, ActorRef, ActorSystem}
+import akka.actor.{Props, ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import mirari.hubs.{FullTopic, StateHubs, HubTopic, Hubs}
 import scala.concurrent.duration.FiniteDuration
 import play.api.mvc.RequestHeader
 import scala.concurrent.Future
+import infra.hubs.pubsub.{PubSubTopic, PubSubHubs}
 
 /**
  * @author alari (name.alari@gmail.com)
@@ -40,7 +40,9 @@ class PubSubSpec extends PlaySpecification {
   val sender = TestProbe()
   implicit val s = sender.ref
 
-  hub("a") = Props[Topic]({new Topic(probe.ref)})
+  hub("a") = Props[Topic]({
+    new Topic(probe.ref)
+  })
   val aHub = hub("a")
 
   "pubsub hubs system" should {

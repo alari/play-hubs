@@ -1,4 +1,4 @@
-package mirari.hubs.routing
+package infra.hubs.routing
 
 /**
  * @author alari

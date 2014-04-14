@@ -1,28 +1,24 @@
 name := "play-hubs"
 
-organization := "ru.mirari"
+organization := "play-infra"
 
-version := "1.0-SNAPSHOT"
+version := "0.1"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
 )
 
-publishTo := {
-  val artifactory = "http://mvn.quonb.org/artifactory/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("Artifactory Realm" at artifactory + "plugins-snapshot-local/")
-  else
-    Some("Artifactory Realm" at artifactory + "plugins-release-local/")
-}
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-
 play.Project.playScalaSettings
 
-resolvers ++= Seq(
-  "quonb" at "http://mvn.quonb.org/artifactory/repo/"
+scalacOptions ++= Seq(
+  "-unchecked",
+  "-deprecation",
+  "-Ywarn-dead-code",
+  "-language:_",
+  "-target:jvm-1.7",
+  "-encoding", "UTF-8"
 )
 
-testOptions in Test += Tests.Argument("junitxml")
+publishTo := Some(Resolver.file("file",  new File( "/mvn-repo" )) )
 
+testOptions in Test += Tests.Argument("junitxml")

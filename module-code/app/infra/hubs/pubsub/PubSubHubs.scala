@@ -1,6 +1,6 @@
-package mirari.hubs.pubsub
+package infra.hubs.pubsub
 
-import mirari.hubs.Hubs
+import infra.hubs.Hubs
 
 /**
  * @author alari

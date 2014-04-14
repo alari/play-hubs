@@ -1,12 +1,9 @@
-package mirari.hubs
+package infra.hubs
 
 import akka.actor._
 import akka.pattern.ask
-import scala.concurrent.{Await, Future}
-import play.api.mvc.RequestHeader
-import scala.concurrent.duration.Duration
-import mirari.hubs.routing.{RoutingTopic, RoutingHubs}
-import mirari.hubs.pubsub.{PubSubClient, PubSubTopic, PubSubHubs}
+import infra.hubs.routing.{RoutingTopic, RoutingHubs}
+import infra.hubs.pubsub.{PubSubClient, PubSubTopic, PubSubHubs}
 
 /**
  * @author alari
@@ -82,7 +79,9 @@ abstract class FullHubs[T](system: => ActorSystem) extends Hubs(system) with Sta
 trait FullTopic[T] extends Actor with PubSubTopic[T] with RoutingTopic[T] with UpdateStash {
   def topicId = self.path.name
 
-  def customBehaviour: Receive = {case a => play.api.Logger.debug(s"Unhandled message for ${self.path}: $a")}
+  def customBehaviour: Receive = {
+    case a => play.api.Logger.debug(s"Unhandled message for ${self.path}: $a")
+  }
 
   def handleAction(action: String, state: T, data: Option[Any]) {
     play.api.Logger.debug(s"You should implement handleAction(action: String, state: T, data: Option[Any]) for ${getClass.getCanonicalName}")
