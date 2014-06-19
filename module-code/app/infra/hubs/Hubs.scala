@@ -1,5 +1,7 @@
 package infra.hubs
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor._
 import akka.pattern.ask
 import infra.hubs.routing.{RoutingTopic, RoutingHubs}
@@ -23,7 +25,7 @@ abstract class Hubs(system: => ActorSystem) {
     this(name)
   }
 
-  val DefaultTimeout = akka.util.Timeout(100)
+  val DefaultTimeout = akka.util.Timeout(100, TimeUnit.MILLISECONDS)
 
   /**
    * Hub wrapper for apply() function

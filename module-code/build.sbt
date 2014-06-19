@@ -2,13 +2,15 @@ name := "play-hubs"
 
 organization := "play-infra"
 
-version := "0.1"
+version := "0.3.0"
+
+crossScalaVersions := Seq("2.10.4", "2.11.1")
+
+lazy val root = (project in file(".")).enablePlugins(play.PlayScala)
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
+  "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 )
-
-play.Project.playScalaSettings
 
 scalacOptions ++= Seq(
   "-unchecked",
