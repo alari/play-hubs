@@ -38,7 +38,7 @@ class HubsSpec extends PlaySpecification{
 
   "hubs system" should {
     "fail with invalid hub" in {
-      hub("b")("c") ? 0 must throwA[Exception].await
+      (hub("b")("c") ? 0).failed must beAnInstanceOf[Exception].await
     }
     "create a topic" in {
       aHub("t0").check.mapTo[Boolean] must beFalse.await

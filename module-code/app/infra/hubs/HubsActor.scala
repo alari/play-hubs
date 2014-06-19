@@ -23,7 +23,7 @@ private[hubs] class HubsActor extends Actor {
       })
 
     case HubMessage(hub, message) =>
-      context.child(hub).map(_.tell(message, sender)).getOrElse(sender ! Status.Failure(new Exception(s"Hub $hub not found")))
+      context.child(hub).map(_.tell(message, sender())).getOrElse(sender ! Status.Failure(new Exception(s"Hub $hub not found")))
   }
 }
 
